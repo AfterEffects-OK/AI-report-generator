@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動画・音声AIレポートジェネレーター</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .tab-active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .prose-custom ul {
+            list-style-position: inside;
+        }
+        .prose-custom li::marker {
+            color: #6b7280;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Table specific styles for better readability and responsiveness */
+        .table-responsive {
+            overflow-x: auto; /* Enable horizontal scrolling on small screens */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        }
+        .table-auto {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table-auto th, .table-auto td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0; /* gray-200 */
+        }
+        .table-auto th {
+            background-color: #f8fafc; /* gray-50 */
+            font-weight: 600;
+            color: #4a5568; /* gray-700 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">動画・音声AIレポートジェネレーター</h1>
+            <p class="mt-3 text-gray-600">PCでファイルを文字起こしし、AIで要約・レポート化する全手順をガイドします。</p>
+        </header>
+
+        <main class="bg-white rounded-2xl shadow-lg p-6 md:p-8 space-y-12">
+            
+            <!-- Step 1: Transcription Guide -->
+            <div id="step-1">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                    <span class="bg-blue-600 text-white rounded-full h-8 w-8 flex items-center justify-center mr-3 font-bold">1</span>
+                    PCでファイルを文字起こし
+                    <!-- ステップ1の表示/非表示を切り替えるボタンを追加 -->
+                    <button id="toggle-step1-button" class="ml-auto px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700">表示</button>
+                </h2>
+                <!-- ステップ1の内容を囲むdivにIDを追加し、JavaScriptで操作する -->
+                <div id="step1-content" class="hidden">
+                    <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-800 p-4 rounded-r-lg">
+                        <p class="font-semibold">なぜこのステップが必要？</p>
+                        <p class="text-sm mt-1">高精度な文字起こしは、多くの計算能力を必要とします。そのため、ブラウザ上ではなく、PCにインストールした専用ツールを使うのが最も確実で高精度な方法です。</p>
+                    </div>
+                    
+                    <div class="mt-6 space-y-4 text-gray-700">
+                        <p>
+                            ここでは、無料で利用できる高精度な文字起こしツール「Whisper」の使用を推奨します。以下の手順で文字起こしを行い、テキストを準備してください。
+                        </p>
+                        <ol class="list-decimal list-inside space-y-3 pl-4">
+                            <li>
+                                <strong>ツールの準備:</strong>
+                                <p class="text-sm text-gray-600 pl-4 mt-1">
+                                    Whisperを簡単に使えるようにした下記のツールをダウンロードし、PCにインストールします。（Windows向け）<br>
+                                    <a href="https://github.com/Const-me/Whisper/releases" target="_blank" class="inline-flex items-center bg-green-600 hover:bg-green-700 text-white font-bold my-2 py-2 px-4 rounded-lg transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                        推奨ツール「Whisper Desktop」をダウンロード
+                                    </a>
+                                    <br>ページ内の最新バージョンの `.zip` ファイル（例: `WhisperDesktop.zip`）をクリックしてダウンロード・解凍してください。<br>
+                                    <strong class="text-blue-700">【重要】言語モデルのダウンロードについて:</strong><br>
+                                    アプリケーションの初回起動時、または文字起こしを行う際に、**言語モデル（例: `large-v3.bin`）のダウンロード**が必要になります。このファイルは、アプリケーションと同じフォルダに自動的にダウンロードされます。ファイルサイズが大きいため、ダウンロードには時間がかかる場合があります。ダウンロードが完了するまで、アプリケーションは文字起こしを開始できません。また、初回文字起こし時にこのダウンロードが始まる場合があるため、初回は時間がかかるとご認識ください。
+                                </p>
+                            </li>
+                            <!-- Whisper言語モデル比較表のセクションを追加 -->
+                            <li class="mt-8">
+                                <strong>推奨モデルの選択とモデル比較:</strong>
+                                <p class="text-sm text-gray-600 pl-4 mt-1">
+                                    Whisperには複数の言語モデルがあり、それぞれ精度、処理速度、必要なPCリソース（VRAM）が異なります。用途に合わせて最適なモデルを選択してください。
+                                    通常、高精度を求める場合は`large`や`large-v3`が推奨されますが、PCのスペックによっては`medium`や`small`を選択することも有効です。
+                                </p>
+                                <div class="table-responsive mt-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                                    <table class="table-auto min-w-full">
+                                        <thead>
+                                            <tr>
+                                                <th class="px-4 py-2">モデル名</th>
+                                                <th class="px-4 py-2">パラメータ数 (M)</th>
+                                                <th class="px-4 py-2">モデルサイズ (概算)</th>
+                                                <th class="px-4 py-2">必要なVRAM (概算)</th>
+                                                <th class="px-4 py-2">相対速度<br>(largeを1x)</th>
+                                                <th class="px-4 py-2">精度傾向</th>
+                                                <th class="px-4 py-2">主な用途</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="border px-4 py-2"><strong>tiny</strong></td>
+                                                <td class="border px-4 py-2">39M</td>
+                                                <td class="border px-4 py-2">72.1MB</td>
+                                                <td class="border px-4 py-2">～1GB</td>
+                                                <td class="border px-4 py-2">～10x ～32x (高速)</td>
+                                                <td class="border px-4 py-2">低</td>
+                                                <td class="border px-4 py-2">短い音声、リソースが非常に限られた環境</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border px-4 py-2"><strong>base</strong></td>
+                                                <td class="border px-4 py-2">74M</td>
+                                                <td class="border px-4 py-2">139MB</td>
+                                                <td class="border px-4 py-2">～1GB</td>
+                                                <td class="border px-4 py-2">～7x ～16x</td>
+                                                <td class="border px-4 py-2">やや低</td>
+                                                <td class="border px-4 py-2">一般的な短い音声、低スペックPC</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border px-4 py-2"><strong>small</strong></td>
+                                                <td class="border px-4 py-2">244M</td>
+                                                <td class="border px-4 py-2">461MB</td>
+                                                <td class="border px-4 py-2">～2GB</td>
+                                                <td class="border px-4 py-2">～4x ～6x</td>
+                                                <td class="border px-4 py-2">中</td>
+                                                <td class="border px-4 py-2">個人的な利用、一般的な会議の文字起こし</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border px-4 py-2"><strong>medium</strong></td>
+                                                <td class="border px-4 py-2">769M</td>
+                                                <td class="border px-4 py-2">1.42GB</td>
+                                                <td class="border px-4 py-2">～5GB</td>
+                                                <td class="border px-4 py-2">～2x</td>
+                                                <td class="border px-4 py-2">高</td>
+                                                <td class="border px-4 py-2">重要な会議、ポッドキャスト、専門用語を含む音声</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border px-4 py-2"><strong>large</strong></td>
+                                                <td class="border px-4 py-2">1550M</td>
+                                                <td class="border px-4 py-2">2.87GB</td>
+                                                <td class="border px-4 py-2">～10GB</td>
+                                                <td class="border px-4 py-2">1x (基準)</td>
+                                                <td class="border px-4 py-2">最高</td>
+                                                <td class="border px-4 py-2">非常に高い精度が求められる場面、多言語対応</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border px-4 py-2"><strong>large-v3</strong></td>
+                                                <td class="border px-4 py-2">1550M</td>
+                                                <td class="border px-4 py-2">largeと同等</td>
+                                                <td class="border px-4 py-2">～10GB</td>
+                                                <td class="border px-4 py-2">1x (largeと同じ)</td>
+                                                <td class="border px-4 py-2">largeよりさらに高精度</td>
+                                                <td class="border px-4 py-2">最新の最高精度が必要な場面</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border px-4 py-2"><strong>turbo</strong></td>
+                                                <td class="border px-4 py-2">809M</td>
+                                                <td class="border px-4 py-2">～6GB</td>
+                                                <td class="border px-4 py-2">～6GB</td>
+                                                <td class="border px-4 py-2">～8x (高速)</td>
+                                                <td class="border px-4 py-2">large-v2と同等</td>
+                                                <td class="border px-4 py-2">高精度と高速処理のバランスが求められる場面</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </li>
+                            <li>
+                                <strong>文字起こし実行:</strong>
+                                <p class="text-sm text-gray-600 pl-4 mt-1">
+                                    起動したアプリに、動画や音声ファイルをドラッグ＆ドロップします。言語設定を「Japanese」にして「Transcribe」ボタンを押すと、自動で文字起こしが始まります。
+                                </p>
+                            </li>
+                            <li>
+                                <strong>テキストのコピー:</strong>
+                                <p class="text-sm text-gray-600 pl-4 mt-1">
+                                    文字起こしが完了したら、生成されたテキスト全体を選択し、コピーします。（右クリックメニューや `Ctrl + C`）
+                                </p>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-gray-300">
+
+            <!-- Step 2: Analysis -->
+            <div id="step-2">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="bg-blue-600 text-white rounded-full h-8 w-8 flex items-center justify-center mr-3 font-bold">2</span>
+                        テキストを貼り付けて分析
+                    </h2>
+                <div class="mb-6">
+                    <p class="text-sm text-gray-600 mb-3">ステップ1でコピーした文字起こし結果を下のボックスに貼り付けて、「レポートを生成する」ボタンを押してください。</p>
+                    <textarea id="transcript-input" rows="10" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow duration-200" placeholder="ここに文字起こしテキストを貼り付け..."></textarea>
+                </div>
+
+                <div class="text-center mb-8">
+                    <button id="generate-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 text-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        レポートを生成する
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- Results Section -->
+            <div id="results-container" class="hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="bg-blue-600 text-white rounded-full h-8 w-8 flex items-center justify-center mr-3 font-bold">3</span>
+                        生成結果
+                    </h2>
+                
+                <!-- Loading Spinner -->
+                <div id="loader" class="flex justify-center items-center py-10">
+                    <div class="loader"></div>
+                    <p class="ml-4 text-gray-600">AIが分析中です... しばらくお待ちください。</p>
+                </div>
+
+                <!-- Tabs -->
+                <div id="results-content" class="hidden">
+                    <div class="border-b border-gray-200 mb-4">
+                        <nav class="flex space-x-4" aria-label="Tabs">
+                            <button id="tab-summary" class="tab-btn px-4 py-2 text-sm font-medium text-gray-500 hover:text-blue-600 border-b-2 border-transparent tab-active">要約</button>
+                            <button id="tab-report" class="tab-btn px-4 py-2 text-sm font-medium text-gray-500 hover:text-blue-600 border-b-2 border-transparent">レポート</button>
+                            <button id="tab-chapters" class="tab-btn px-4 py-2 text-sm font-medium text-gray-500 hover:text-blue-600 border-b-2 border-transparent">チャプター要約</button>
+                        </nav>
+                    </div>
+
+                    <!-- Tab Panels -->
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <div id="panel-summary" class="tab-panel prose-custom"></div>
+                        <div id="panel-report" class="tab-panel hidden prose-custom"></div>
+                        <div id="panel-chapters" class="tab-panel hidden">
+                            <p class="text-sm text-gray-600 mb-4">
+                                各チャプターの開始時間と、その内容の要約（タイトル）を一覧で表示します。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-right">
+                        <button id="copy-button" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+                            内容をコピー
+                        </button>
+                    </div>
+                </div>
+
+                    <!-- Error Message -->
+                <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
+                    <strong class="font-bold">エラーが発生しました。</strong>
+                    <span class="block sm:inline" id="error-text"></span>
+                </div>
+            </div>
+
+        </main>
+        
+        <footer class="text-center mt-8 text-sm text-gray-500">
+            <p>Powered by Google Gemini API & OpenAI Whisper</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const generateButton = document.getElementById('generate-button');
+        const transcriptInput = document.getElementById('transcript-input');
+        const resultsContainer = document.getElementById('results-container');
+        const loader = document.getElementById('loader');
+        const resultsContent = document.getElementById('results-content');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+
+        const tabs = document.querySelectorAll('.tab-btn');
+        const panels = document.querySelectorAll('.tab-panel');
+        const copyButton = document.getElementById('copy-button');
+        let activeTab = 'summary';
+
+        // 新しく追加された要素
+        const toggleStep1Button = document.getElementById('toggle-step1-button');
+        const step1Content = document.getElementById('step1-content');
+
+        // Event Listeners
+        generateButton.addEventListener('click', handleGenerate);
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.id.split('-')[1];
+                switchTab(tabId);
+            });
+        });
+
+        copyButton.addEventListener('click', copyActivePanelContent);
+
+        // ステップ1のトグルボタンのイベントリスナー
+        toggleStep1Button.addEventListener('click', () => {
+            if (step1Content.classList.contains('hidden')) {
+                step1Content.classList.remove('hidden');
+                toggleStep1Button.textContent = '非表示';
+            } else {
+                step1Content.classList.add('hidden');
+                toggleStep1Button.textContent = '表示';
+            }
+        });
+
+        /**
+         * Switches the active tab and panel.
+         * @param {string} tabId - The ID of the tab to switch to (e.g., 'summary').
+         */
+        function switchTab(tabId) {
+            activeTab = tabId;
+            tabs.forEach(t => {
+                t.classList.toggle('tab-active', t.id === `tab-${tabId}`);
+            });
+            panels.forEach(p => {
+                p.classList.toggle('hidden', p.id !== `panel-${tabId}`);
+            });
+        }
+
+        /**
+         * Copies the content of the currently active tab panel to the clipboard.
+         */
+        function copyActivePanelContent() {
+            const activePanel = document.getElementById(`panel-${activeTab}`);
+            if (!activePanel) return;
+
+            const textToCopy = activePanel.innerText;
+
+            const textArea = document.createElement("textarea");
+            textArea.value = textToCopy;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                copyButton.textContent = 'コピーしました！';
+                setTimeout(() => {
+                    copyButton.textContent = '内容をコピー';
+                }, 2000);
+            } catch (err) {
+                console.error('コピーに失敗しました', err);
+                copyButton.textContent = 'コピー失敗';
+            }
+            document.body.removeChild(textArea);
+        }
+
+        /**
+         * Main function to handle the generation process.
+         */
+        async function handleGenerate() {
+            const transcript = transcriptInput.value.trim();
+            if (!transcript) {
+                // alert()はUI内でメッセージを出すように変更することを推奨します。
+                // 今回は元々のコードの動作を踏襲しています。
+                alert('ステップ2のボックスに、文字起こしテキストを入力してください。');
+                return;
+            }
+
+            // --- UI Setup for loading ---
+            resultsContainer.classList.remove('hidden');
+            resultsContent.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            loader.style.display = 'flex';
+
+            try {
+                // --- Construct the prompt for the AI ---
+                const prompt = `
+以下の文字起こしテキストを分析し、指定されたJSON形式で出力してください。
+
+# 制約条件
+- 必ず日本語で出力すること。
+- 要約は、全体の主題と結論がわかるように300字程度で簡潔に記述すること。
+- レポートは、議論の要点を箇条書きで複数挙げ、それぞれを具体的に説明すること。Markdown形式で見やすく整形すること。
+- チャプターは、話の主要な区切りを見つけ出し、タイムスタンプと内容を要約したタイトルを付けること。タイムスタンプは「HH:MM:SS」形式を厳密に守ること。テキスト中に時間情報がない場合は、文脈から適切な時間を推定し割り振ること。
+
+# 文字起こしテキスト
+---
+${transcript}
+---
+`;
+
+                const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                
+                // --- Define the expected JSON schema for the response ---
+                const payload = {
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                summary: { type: "STRING", description: "全体の要約（300字程度）" },
+                                report: { type: "STRING", description: "Markdown形式の箇条書きレポート" },
+                                chapters: {
+                                    type: "ARRAY",
+                                    description: "話の区切りごとのチャプターリスト",
+                                    items: {
+                                        type: "OBJECT",
+                                        properties: {
+                                            timestamp: { type: "STRING", description: "チャプターの開始時間 (HH:MM:SS)" },
+                                            title: { type: "STRING", description: "チャプターのタイトル" }
+                                        },
+                                        required: ["timestamp", "title"]
+                                    }
+                                }
+                            },
+                            required: ["summary", "report", "chapters"]
+                        }
+                    }
+                };
+
+                const apiKey = ""; // APIキーは実行環境で自動的に設定されます
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                // --- Call the Gemini API ---
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    console.error("API Error Response:", errorBody);
+                    throw new Error(`APIエラー: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                // --- Process and display the results ---
+                if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0]) {
+                    const jsonResponse = JSON.parse(result.candidates[0].content.parts[0].text);
+                    displayResults(jsonResponse);
+                } else {
+                    console.error("予期しないAPIレスポンスの構造:", result);
+                    throw new Error("AIからの有効な応答がありませんでした。");
+                }
+
+            } catch (error) {
+                console.error('生成エラー:', error);
+                showError("生成に失敗しました。入力テキストが長すぎるか、APIに問題がある可能性があります。時間をおいて再度お試しください。");
+            } finally {
+                // --- UI Cleanup ---
+                loader.style.display = 'none';
+            }
+        }
+        
+        /**
+         * Displays the results from the API in the UI.
+         * @param {object} data - The parsed JSON data from the API.
+         */
+        function displayResults(data) {
+            const { summary, report, chapters } = data;
+
+            // --- Populate Summary Panel ---
+            document.getElementById('panel-summary').innerHTML = `<p>${summary.replace(/\n/g, '<br>')}</p>`;
+
+            // --- Populate Report Panel (Markdown to HTML) ---
+            let reportHtml = report
+                .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold mt-5 mb-3">$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-6 mb-4">$1</h1>')
+                .replace(/^\* (.*$)/gim, '<li>$1</li>');
+            
+            // Wrap list items in ul tags
+            if (reportHtml.includes('<li>')) {
+                // Ensure list items are properly wrapped in <ul>.
+                // This regex handles cases where multiple list blocks might exist
+                reportHtml = reportHtml.split('<li>').map((segment, index) => {
+                    if (index === 0) return segment; // First segment before any <li>
+                    const parts = segment.split('</li>');
+                    return `<li>${parts[0]}</li>` + (parts.length > 1 ? parts.slice(1).join('</li>') : '');
+                }).join('');
+
+                // Ensure all `<li>` are within a `<ul>` and handle potential `<ul>` nesting issues
+                reportHtml = reportHtml.replace(/(^|\n)(?!<ul|<h|<p>)(.*<li>.*<\/li>.*)($|\n)/g, (match, p1, p2, p3) => {
+                    return p1 + '<ul>' + p2.trim() + '</ul>' + p3;
+                });
+                
+                // Remove extra line breaks that might break lists
+                reportHtml = reportHtml.replace(/<br>\s*<\/?ul>/g, '');
+                reportHtml = reportHtml.replace(/<\/li><br>/g, '</li>');
+
+            }
+            document.getElementById('panel-report').innerHTML = reportHtml.replace(/\n/g, '<br>');
+
+
+            // --- Populate Chapters Panel ---
+            const chaptersPanel = document.getElementById('panel-chapters');
+            chaptersPanel.innerHTML = ''; // Clear previous content
+            // 説明テキストを追加
+            const descriptionParagraph = document.createElement('p');
+            descriptionParagraph.className = 'text-sm text-gray-600 mb-4';
+            descriptionParagraph.textContent = '各チャプターの開始時間と、その内容の要約（タイトル）を一覧で表示します。';
+            chaptersPanel.appendChild(descriptionParagraph);
+
+            const chapterList = document.createElement('ul');
+            chapterList.className = 'space-y-3';
+            if(chapters && chapters.length > 0){
+                chapters.forEach(chapter => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center p-3 bg-white rounded-lg shadow-sm border border-gray-200';
+                    li.innerHTML = `
+                        <span class="font-mono text-sm text-blue-600 bg-blue-100 rounded px-2 py-1 mr-4">${chapter.timestamp || '00:00:00'}</span>
+                        <span class="text-gray-800">${chapter.title || 'タイトルなし'}</span>
+                    `;
+                    chapterList.appendChild(li);
+                });
+            } else {
+                chapterList.innerHTML = `<p class="text-gray-500">チャプター情報が見つかりませんでした。</p>`;
+            }
+            chaptersPanel.appendChild(chapterList);
+            
+            // --- Show the content and reset to the summary tab ---
+            resultsContent.classList.remove('hidden');
+            switchTab('summary');
+        }
+
+        /**
+         * Displays an error message in the UI.
+         * @param {string} message - The error message to display.
+         */
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
